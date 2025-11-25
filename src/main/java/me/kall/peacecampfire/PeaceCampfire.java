@@ -7,14 +7,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.CampfireBlock;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -26,10 +27,10 @@ public final class PeaceCampfire {
     public static final String MOD_ID = "peacecampfire";
     public static final Logger LOGGER = LogManager.getLogger(PeaceCampfire.class);
 
-    public PeaceCampfire(@NotNull FMLJavaModLoadingContext context) {
-        context.registerConfig(ModConfig.Type.COMMON, CONFIG);
+    public PeaceCampfire(IEventBus modBus, Dist dist, @NotNull ModContainer container) {
+        container.registerConfig(ModConfig.Type.COMMON, CONFIG);
 
-        IEventBus forgeBus = MinecraftForge.EVENT_BUS;
+        IEventBus forgeBus = NeoForge.EVENT_BUS;
 
         forgeBus.addListener(this::blockChange);
         forgeBus.addListener(this::dataRebuild);
@@ -66,7 +67,7 @@ public final class PeaceCampfire {
         event.getServer().execute(() -> event.getServer().getAllLevels().forEach(level -> PeaceChunks.get(level).rebuild(level)));
     }
 
-    public void enemySpawn(MobSpawnEvent.@NotNull FinalizeSpawn event) {
+    public void enemySpawn(@NotNull FinalizeSpawnEvent event) {
         if (event.isSpawnCancelled()) return;
         if (!(event.getEntity() instanceof Enemy)) return;
 
@@ -77,12 +78,12 @@ public final class PeaceCampfire {
         if (DEBUG.get()) LOGGER.info("[PeaceCampfire] Prevent enemy {} spawning as the chunk [{}, {}] is in peace", event.getEntity(), ChunkPos.getX(chunk), ChunkPos.getZ(chunk));
     }
 
-    private static final ForgeConfigSpec CONFIG;
-    private static final ForgeConfigSpec.BooleanValue DEBUG;
-    private static final ForgeConfigSpec.IntValue PEACE_RADIUS;
+    private static final ModConfigSpec CONFIG;
+    private static final ModConfigSpec.BooleanValue DEBUG;
+    private static final ModConfigSpec.IntValue PEACE_RADIUS;
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("PeaceCampfire");
 
         DEBUG = builder.define("EnableDebugLogPrint", false);
