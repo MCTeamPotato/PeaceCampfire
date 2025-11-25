@@ -9,8 +9,9 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -66,14 +67,15 @@ public final class PeaceCampfire {
         event.getServer().execute(() -> event.getServer().getAllLevels().forEach(level -> PeaceChunks.get(level).rebuild(level)));
     }
 
-    public void enemySpawn(MobSpawnEvent.@NotNull FinalizeSpawn event) {
-        if (event.isSpawnCancelled()) return;
-        if (!(event.getEntity() instanceof Enemy)) return;
+    @SuppressWarnings("PatternVariableCanBeUsed")
+    public void enemySpawn(LivingSpawnEvent.@NotNull CheckSpawn event) {
+        if (event.getResult().equals(Event.Result.DENY)) return;
+        if (!(event.getEntity() instanceof Enemy) || !(event.getLevel() instanceof ServerLevel)) return;
 
-        ServerLevel level = event.getLevel().getLevel();
+        ServerLevel level = (ServerLevel) event.getLevel();
         long chunk = ChunkPos.asLong(SectionPos.blockToSectionCoord(event.getX()), SectionPos.blockToSectionCoord(event.getZ()));
         if (PeaceChunks.get(level).viewChunk(level, chunk).isEmpty()) return;
-        event.setSpawnCancelled(true);
+        event.setResult(Event.Result.DENY);
         if (DEBUG.get()) LOGGER.info("[PeaceCampfire] Prevent enemy {} spawning as the chunk [{}, {}] is in peace", event.getEntity(), ChunkPos.getX(chunk), ChunkPos.getZ(chunk));
     }
 
