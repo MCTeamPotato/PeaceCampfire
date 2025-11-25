@@ -17,6 +17,10 @@ import java.util.function.Predicate;
 public class PeaceChunks extends ChunkData.BlockData {
     private final Object2ObjectMap<ResourceLocation, Long2ObjectMap<Set<Long>>> data = new Object2ObjectOpenHashMap<>();
 
+    public PeaceChunks() {
+        super("PeaceCampfireChunkStorage");
+    }
+
     @Override
     public @NotNull Object2ObjectMap<ResourceLocation, Long2ObjectMap<Set<Long>>> data() {
         return this.data;

@@ -11,12 +11,12 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -64,11 +64,10 @@ public final class PeaceCampfire {
         }
     }
 
-    public void dataRebuild(@NotNull ServerStartedEvent event) {
+    public void dataRebuild(@NotNull FMLServerStartedEvent event) {
         event.getServer().execute(() -> event.getServer().getAllLevels().forEach(level -> PeaceChunks.get(level).rebuild(level)));
     }
 
-    @SuppressWarnings("PatternVariableCanBeUsed")
     public void enemySpawn(LivingSpawnEvent.@NotNull CheckSpawn event) {
         if (event.getResult().equals(Event.Result.DENY)) return;
         if (!(event.getEntity() instanceof Enemy) || !(event.getWorld() instanceof ServerLevel)) return;
