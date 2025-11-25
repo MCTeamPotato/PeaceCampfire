@@ -4,6 +4,7 @@ import me.kall.duplicationless.event.BlockChangeEvent;
 import me.kall.peacecampfire.data.PeaceChunks;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.CampfireBlock;
@@ -13,9 +14,9 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -27,8 +28,8 @@ public final class PeaceCampfire {
     public static final String MOD_ID = "peacecampfire";
     public static final Logger LOGGER = LogManager.getLogger(PeaceCampfire.class);
 
-    public PeaceCampfire(@NotNull FMLJavaModLoadingContext context) {
-        context.registerConfig(ModConfig.Type.COMMON, CONFIG);
+    public PeaceCampfire() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG);
 
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
@@ -70,10 +71,10 @@ public final class PeaceCampfire {
     @SuppressWarnings("PatternVariableCanBeUsed")
     public void enemySpawn(LivingSpawnEvent.@NotNull CheckSpawn event) {
         if (event.getResult().equals(Event.Result.DENY)) return;
-        if (!(event.getEntity() instanceof Enemy) || !(event.getLevel() instanceof ServerLevel)) return;
+        if (!(event.getEntity() instanceof Enemy) || !(event.getWorld() instanceof ServerLevel)) return;
 
-        ServerLevel level = (ServerLevel) event.getLevel();
-        long chunk = ChunkPos.asLong(SectionPos.blockToSectionCoord(event.getX()), SectionPos.blockToSectionCoord(event.getZ()));
+        ServerLevel level = (ServerLevel) event.getWorld();
+        long chunk = ChunkPos.asLong(SectionPos.blockToSectionCoord(Mth.floor(event.getX())), SectionPos.blockToSectionCoord(Mth.floor(event.getZ())));
         if (PeaceChunks.get(level).viewChunk(level, chunk).isEmpty()) return;
         event.setResult(Event.Result.DENY);
         if (DEBUG.get()) LOGGER.info("[PeaceCampfire] Prevent enemy {} spawning as the chunk [{}, {}] is in peace", event.getEntity(), ChunkPos.getX(chunk), ChunkPos.getZ(chunk));
